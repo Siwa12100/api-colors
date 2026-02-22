@@ -5,3 +5,4 @@ marshmallow==4.2.2
 marshmallow-sqlalchemy==1.1.0
 python-dotenv==1.1.0
 pytest==8.4.0
+pytest-cov==6.1.0
