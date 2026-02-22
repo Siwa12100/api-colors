@@ -1,0 +1,121 @@
+kind: pipeline
+type: docker
+name: ci-main
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+volumes:
+  - name: shared-volume
+    temp: {}
+
+steps:
+  - name: "🛠 build"
+    image: python:3.13-alpine
+    commands:
+      - echo "🛠 [INFO] Installation des dépendances Colors API..."
+      - pip install -r requirements.txt || {
+          echo "❌ [ERROR] L'installation des dépendances a échoué.";
+          exit 1;
+        }
+      - echo "✅ [SUCCESS] Build terminé avec succès."
+
+  - name: "🧪 tests-unitaires"
+    image: python:3.13-alpine
+    environment:
+      API_BASE_URL:
+        from_secret: API_BASE_URL
+      SECRET_KEY:
+        from_secret: SECRET_KEY
+      DATABASE_URL:
+        from_secret: DATABASE_URL
+    volumes:
+      - name: shared-volume
+        path: /coverage
+    commands:
+      - echo "🧪 [INFO] Installation des dépendances..."
+      - pip install -r requirements.txt
+      - echo "🧪 [INFO] Lancement des tests avec couverture..."
+      - pytest tests/ --cov=app --cov-report=lcov:coverage/lcov.info --cov-report=term || {
+          echo "❌ [ERROR] Les tests ont échoué.";
+          exit 1;
+        }
+      - echo "🔍 [DEBUG] Copie du rapport de couverture..."
+      - cp -r coverage/* /coverage/
+      - echo "🔍 [DEBUG] Contenu de /coverage/ :"
+      - ls -la /coverage/
+      - echo "✅ [SUCCESS] Tests terminés avec couverture."
+
+  - name: "📊 analyse-sonar"
+    image: sonarsource/sonar-scanner-cli:latest
+    depends_on:
+      - "🧪 tests-unitaires"
+    environment:
+      SONAR_HOST_URL: https://sonar.davalada.valorium-mc.fr
+      SONAR_TOKEN:
+        from_secret: SONAR_TOKEN
+    volumes:
+      - name: shared-volume
+        path: /coverage
+    commands:
+      - echo "📊 [INFO] Initialisation de l'analyse Sonar..."
+      - echo "🔍 [DEBUG] Vérification du rapport de couverture..."
+      - ls -la /coverage/
+      - mkdir -p /tmp/scannerwork
+      - sonar-scanner
+          -Dsonar.projectKey=api-colors-main
+          -Dsonar.host.url=$SONAR_HOST_URL
+          -Dsonar.token=$SONAR_TOKEN
+          -Dsonar.sources=app
+          -Dsonar.tests=tests
+          -Dsonar.python.coverage.reportPaths=/coverage/lcov.info
+          -Dsonar.working.directory=/tmp/scannerwork || {
+          echo "❌ [ERROR] L'analyse Sonar a échoué.";
+          exit 1;
+        }
+      - echo "✅ [SUCCESS] Analyse Sonar terminée."
+
+  - name: "🐳 build-push-img-main"
+    image: plugins/docker
+    depends_on:
+      - "🛠 build"
+    settings:
+      registry: registry.davalada.valorium-mc.fr
+      repo: registry.davalada.valorium-mc.fr/api-colors-main
+      username:
+        from_secret: DOCKER_USERNAME
+      password:
+        from_secret: DOCKER_PASSWORD
+      dockerfile: Dockerfile
+      tags:
+        - latest
+
+  - name: "🚀 deploiement-vps-main"
+    image: appleboy/drone-ssh
+    depends_on:
+      - "🐳 build-push-img-main"
+    settings:
+      host: ecirada.valorium-mc.fr
+      username:
+        from_secret: SSH_USER
+      ssh_key:
+        from_secret: SSH_PRIVATE_KEY
+      port: 22
+      script:
+        - echo "🚀 [INFO] Déploiement de Colors API (main) en cours..."
+        - cd deploiements/api-colors-main
+        - echo "🛑 [INFO] Arrêt de l'ancien service..."
+        - docker compose down
+        - echo "📥 [INFO] Pull de la dernière image depuis le registry..."
+        - docker compose pull
+        - echo "🚀 [INFO] Lancement du service..."
+        - docker compose up -d
+        - sleep 5
+        - docker ps | grep api-colors-main || {
+            echo "❌ [ERROR] Le service ne tourne pas !";
+            exit 1;
+          }
+        - echo "✅ [SUCCESS] Déploiement de Colors API (main) terminé avec succès."

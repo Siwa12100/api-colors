@@ -34,21 +34,3 @@ def create_app(config_name=None):
         return jsonify({"error": "Erreur interne du serveur"}), 500
 
     return app
-
-
-
-# from flask import Flask
-# from app.extensions import db, migrate
-# from app.config import Config
-
-# def create_app():
-#     app = Flask(__name__)
-#     app.config.from_object(Config)
-
-#     db.init_app(app)
-#     migrate.init_app(app, db)
-
-#     from app.routes import colors_bp
-#     app.register_blueprint(colors_bp)
-
-#     return app
