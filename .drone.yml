@@ -52,6 +52,7 @@ steps:
   - name: "📊 analyse-sonar"
     image: sonarsource/sonar-scanner-cli:latest
     depends_on:
+      - "🛠 build"
       - "🧪 tests-unitaires"
     environment:
       SONAR_HOST_URL: https://sonar.davalada.valorium-mc.fr
@@ -82,6 +83,7 @@ steps:
     image: plugins/docker
     depends_on:
       - "🛠 build"
+      - "🧪 tests-unitaires"
     settings:
       registry: registry.davalada.valorium-mc.fr
       repo: registry.davalada.valorium-mc.fr/api-colors-main
