@@ -39,7 +39,7 @@ steps:
       - echo "🧪 [INFO] Installation des dépendances..."
       - pip install -r requirements.txt
       - echo "🧪 [INFO] Lancement des tests avec couverture..."
-      - pytest tests/ --cov=app --cov-report=lcov:coverage/lcov.info --cov-report=term || {
+      - pytest tests/ --cov=app --cov-report=xml:coverage/coverage.xml --cov-report=term || {
           echo "❌ [ERROR] Les tests ont échoué.";
           exit 1;
         }
@@ -72,12 +72,13 @@ steps:
           -Dsonar.token=$SONAR_TOKEN
           -Dsonar.sources=app
           -Dsonar.tests=tests
-          -Dsonar.python.coverage.reportPaths=/coverage/lcov.info
+          -Dsonar.python.coverage.reportPaths=/coverage/coverage.xml
           -Dsonar.working.directory=/tmp/scannerwork || {
           echo "❌ [ERROR] L'analyse Sonar a échoué.";
           exit 1;
         }
       - echo "✅ [SUCCESS] Analyse Sonar terminée."
+
 
   - name: "🐳 build-push-img-main"
     image: plugins/docker
