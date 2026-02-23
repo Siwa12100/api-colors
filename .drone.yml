@@ -109,7 +109,7 @@ steps:
       port: 22
       script:
         - echo "🚀 [INFO] Déploiement de Colors API (main) en cours..."
-        - cd deploiements/api-colors-main
+        - cd deploiements/colors-api/api-colors-main
         - echo "🛑 [INFO] Arrêt de l'ancien service..."
         - docker compose down
         - echo "📥 [INFO] Pull de la dernière image depuis le registry..."
@@ -123,3 +123,30 @@ steps:
           }
         - echo "✅ [SUCCESS] Déploiement de Colors API (main) terminé avec succès."
 
+
+  - name: "🚀 deploiement-vps-dev"
+    image: appleboy/drone-ssh
+    depends_on:
+      - "🐳 build-push-img-main"
+    settings:
+      host: ecirada.valorium-mc.fr
+      username:
+        from_secret: SSH_USER
+      ssh_key:
+        from_secret: SSH_PRIVATE_KEY
+      port: 22
+      script:
+        - echo "🚀 [INFO] Déploiement de Colors API (dev) en cours..."
+        - cd deploiements/colors-api/api-colors-dev
+        - echo "🛑 [INFO] Arrêt de l'ancien service..."
+        - docker compose down
+        - echo "📥 [INFO] Pull de la dernière image depuis le registry..."
+        - docker compose pull
+        - echo "🚀 [INFO] Lancement du service..."
+        - docker compose up -d
+        - sleep 5
+        - docker ps | grep api-colors-dev || {
+            echo "❌ [ERROR] Le service ne tourne pas !";
+            exit 1;
+          }
+        - echo "✅ [SUCCESS] Déploiement de Colors API (dev) terminé avec succès."
