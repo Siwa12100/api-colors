@@ -1,0 +1,16 @@
+services:
+  api-colors:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api-colors
+    env_file:
+      - .env
+    ports:
+      - "5011:5013"
+    restart: unless-stopped
+    volumes:
+      - db-data:/app/instance  # persist la base SQLite
+
+volumes:
+  db-data:
