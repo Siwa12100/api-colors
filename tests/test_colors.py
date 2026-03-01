@@ -2,13 +2,9 @@ import pytest
 from app.app import create_app
 from app.extensions import db
 
-TEST_DATABASE_URL = "postgresql://colors:lasangatechnasuslaflord'albespin@localhost:5432/colors-tests"
-
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def app():
-    """Crée l'app une seule fois pour toute la session."""
-    app = create_app()
-    app.config["SQLALCHEMY_DATABASE_URI"] = TEST_DATABASE_URL
+    app = create_app("testing")
     with app.app_context():
         db.create_all()
     yield app
@@ -17,7 +13,6 @@ def app():
 
 @pytest.fixture(autouse=True)
 def clean_db(app):
-    """Vide toutes les tables avant chaque test."""
     with app.app_context():
         for table in reversed(db.metadata.sorted_tables):
             db.session.execute(table.delete())
@@ -54,23 +49,26 @@ def test_get_colors(client):
     assert resp.get_json()["total"] == 1
 
 def test_get_single_color(client):
-    client.post("/api/colors", json=SAMPLE_COLOR)
-    resp = client.get("/api/colors/1")
+    post_resp = client.post("/api/colors", json=SAMPLE_COLOR)
+    color_id = post_resp.get_json()["id"]
+    resp = client.get(f"/api/colors/{color_id}")
     assert resp.status_code == 200
     assert resp.get_json()["name"] == "Rouge"
 
 def test_update_color(client):
-    client.post("/api/colors", json=SAMPLE_COLOR)
+    post_resp = client.post("/api/colors", json=SAMPLE_COLOR)
+    color_id = post_resp.get_json()["id"]
     updated = {**SAMPLE_COLOR, "name": "Rouge Foncé", "hex_code": "#CC0000"}
-    resp = client.put("/api/colors/1", json=updated)
+    resp = client.put(f"/api/colors/{color_id}", json=updated)
     assert resp.status_code == 200
     assert resp.get_json()["name"] == "Rouge Foncé"
 
 def test_delete_color(client):
-    client.post("/api/colors", json=SAMPLE_COLOR)
-    resp = client.delete("/api/colors/1")
+    post_resp = client.post("/api/colors", json=SAMPLE_COLOR)
+    color_id = post_resp.get_json()["id"]
+    resp = client.delete(f"/api/colors/{color_id}")
     assert resp.status_code == 200
-    resp = client.get("/api/colors/1")
+    resp = client.get(f"/api/colors/{color_id}")
     assert resp.status_code == 404
 
 def test_create_invalid_color(client):

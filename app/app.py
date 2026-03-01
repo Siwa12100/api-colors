@@ -1,17 +1,22 @@
 from flask import Flask, jsonify
 from app.extensions import db
-
+from app.config import config_by_name
+import os
 
 def create_app(config_name=None):
     app = Flask(__name__)
 
-    if config_name == "testing":
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
-        app.config["TESTING"] = True
-    else:
-        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///colors.db"
+    if config_name is None:
+        config_name = os.getenv("FLASK_ENV", "development")
 
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    config = config_by_name.get(config_name)
+    if config is None:
+        raise ValueError(f"Config inconnue : {config_name}")
+
+    # Validation seulement au moment de créer l'app, pas à l'import
+    config.validate()
+
+    app.config.from_object(config)
 
     db.init_app(app)
 
