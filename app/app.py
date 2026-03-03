@@ -20,8 +20,9 @@ def create_app(config_name=None):
 
     db.init_app(app)
 
-    from app.routes import colors_bp
+    from app.routes import colors_bp, auth_bp
     app.register_blueprint(colors_bp)
+    app.register_blueprint(auth_bp)
 
     @app.route("/")
     def index():
