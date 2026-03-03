@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from app.extensions import db
 from app.config import config_by_name
 import os
+from app.routes import colors_bp, images_bp
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -18,10 +19,11 @@ def create_app(config_name=None):
 
     app.config.from_object(config)
 
-    db.init_app(app)
-
-    from app.routes import colors_bp
+    db.init_app(app)    
+    
+    # Register blueprints
     app.register_blueprint(colors_bp)
+    app.register_blueprint(images_bp)
 
     @app.route("/")
     def index():
