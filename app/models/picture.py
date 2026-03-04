@@ -77,3 +77,6 @@ class Picture(db.Model):
             "downloadLink": self.downloadLink,
             "lastUpdated": self.lastUpdated
         }
+    
+    def __repr__(self):
+        return f"<Picture : {self.name}>"

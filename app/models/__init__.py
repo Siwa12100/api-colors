@@ -1,4 +1,3 @@
-from app.models.picture import Picture
-from app.models.tag import Tag
+from app.models import *
 
-__all__ = ["Picture", "Tag"]
+__all__ = ["Admin", "DataSource", "Folder", "ImageLocation", "Picture", "PictureRatio", "Tag", "UserRights", "Users", "WorkSpace"]

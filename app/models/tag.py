@@ -18,3 +18,6 @@ class Tag(db.Model):
             "name": self.name,
             "hex_code": self.hex_code,
         }
+    
+    def __repr__(self):
+        return f"<Tag : {self.name}>"
