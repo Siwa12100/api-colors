@@ -1,8 +1,8 @@
-from flask import Flask, jsonify
-from app.extensions import db
-from app.config import config_by_name
 import os
-from app.routes import colors_bp, images_bp
+from flask import Flask, jsonify
+from app.extensions import db, migrate
+from app.config import config_by_name
+from app.routes import pictures_bp, tags_bp
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -20,10 +20,11 @@ def create_app(config_name=None):
     app.config.from_object(config)
 
     db.init_app(app)    
+    migrate.init_app(app, db)
     
     # Register blueprints
-    app.register_blueprint(colors_bp)
-    app.register_blueprint(images_bp)
+    app.register_blueprint(pictures_bp)
+    app.register_blueprint(tags_bp)
 
     @app.route("/")
     def index():

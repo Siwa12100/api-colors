@@ -1,4 +1,4 @@
-from app.routes.colors import colors_bp
-from app.routes.images import images_bp
+from app.routes.pictures import pictures_bp
+from app.routes.tags import tags_bp
 
-__all__ = ["colors_bp", "images_bp"]
+__all__ = ["pictures_bp", "tags_bp"]
