@@ -1,5 +1,4 @@
 from app.extensions import db
-from app.models.tag import Tag
 import enum
 
 class OrientationEnum(enum.Enum):
@@ -75,7 +74,8 @@ class Picture(db.Model):
             "tags": [tag.to_dict() for tag in self.tags], 
             "thumbnailLink": self.thumbnailLink,
             "downloadLink": self.downloadLink,
-            "lastUpdated": self.lastUpdated
+            "lastUpdated": self.lastUpdated,
+            "sources": self.sources,
         }
     
     def __repr__(self):

@@ -16,11 +16,12 @@ def upload_pictures():
     selected_fields = "files(id, name, hasThumbnail, thumbnailLink, size, imageMediaMetadata, webContentLink, webViewLink, modifiedTime)" 
     g_drive_service = GoogleDriveService().build()
     list_file = g_drive_service.files().list(fields=selected_fields).execute()
+    cmp_pictures_added = 0
 
     for file in list_file["files"]:
         # Prevent duplicates
         if Picture.query.filter_by(google_id=file.get("id")).first():
-            return jsonify({"error": "Cette image existe déjà"}), 409
+            break
     
         if (file.get("hasThumbnail", False) == False):
             break
@@ -53,16 +54,11 @@ def upload_pictures():
         )
         db.session.add(image)
         db.session.commit()
+        cmp_pictures_added += 1
 
-    res = db.session.execute(db.select(Picture)).scalars()
+    #res = db.session.execute(db.select(Picture)).scalars()
 
-    list_file_name = []
-    cmp = 0
-    for ress in res:
-        list_file_name.append(ress.name)
-        cmp += 1
-
-    return  {"files": list_file_name, "size": cmp}
+    return  {"pictures_added_count": cmp_pictures_added}
 
 # ---------- GET all with filter ----------
 @pictures_bp.route("", methods=["GET"])
@@ -106,7 +102,7 @@ def get_pictures():
     tags = request.args.get("tags")
     if tags:
         for tag_id in tags:
-            query = Picture.query.join(Picture.tags).filter(Tag.id == tag_id).all()
+            query = query.join(Picture.tags).filter(Tag.id == tag_id)
 
     # Picture Visual
     main_colors = request.args.get("mainColors")
