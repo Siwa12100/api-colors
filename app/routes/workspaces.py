@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 
 from app.models.workspace import WorkSpace
-from app.models.users import User
+from app.models.user import User
 from app.services.workspace_service import WorkspaceService
 from app.utils.api_request import get_or_404, get_pagination_params, pagination_to_dict
 

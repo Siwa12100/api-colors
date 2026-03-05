@@ -5,7 +5,7 @@ from .picture import Picture
 from .pictureRatio import PictureRatio
 from .tag import Tag
 from .userRights import UserRights
-from .users import User
+from .user import User
 from .workspace import WorkSpace
 
 __all__ = [
@@ -17,6 +17,5 @@ __all__ = [
     "Tag",
     "UserRights",
     "User",
-    "Users", 
     "WorkSpace",
 ]
