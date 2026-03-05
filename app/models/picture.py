@@ -46,7 +46,11 @@ class Picture(db.Model):
 
     # - - - Other - - -
     lastUpdated = db.Column(db.TIMESTAMP(timezone=True), nullable=False)
-    sources = db.Column(db.BigInteger, nullable=False)
+    datasource_id = db.Column(
+        db.Integer,
+        db.ForeignKey("datasource.id"),
+        nullable=False
+    )
 
     def create(self, **kwargs):
         self.name=kwargs.get("name")
@@ -63,7 +67,7 @@ class Picture(db.Model):
         self.thumbnailLink=kwargs.get("thumbnailLink")
         self.downloadLink=kwargs.get("downloadLink")
         self.lastUpdated=kwargs.get("lastUpdated")
-        self.sources=kwargs.get("sources")
+        self.datasource_id = kwargs.get("datasource_id")
 
     def to_dict(self):
         return {
@@ -75,8 +79,10 @@ class Picture(db.Model):
             "thumbnailLink": self.thumbnailLink,
             "downloadLink": self.downloadLink,
             "lastUpdated": self.lastUpdated,
-            "sources": self.sources,
+            "datasource_id": self.datasource_id,
         }
     
     def __repr__(self):
         return f"<Picture : {self.name}>"
+    
+
