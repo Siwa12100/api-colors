@@ -1,3 +1,3 @@
-from app.models.color import Color
+from app.models import *
 
-__all__ = ["Color"]
+__all__ = ["Admin", "DataSource", "Folder", "ImageLocation", "Picture", "PictureRatio", "Tag", "UserRights", "Users", "WorkSpace"]

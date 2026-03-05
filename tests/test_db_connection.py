@@ -33,6 +33,9 @@ def test_db_tables_exist(app):
     with app.app_context():
         db.create_all()
         tables = db.inspect(db.engine).get_table_names()
-        assert "color" in tables or "colors" in tables, (
-            f"Table Color introuvable. Tables présentes : {tables}"
+        assert "pictures" in tables or "picture" in tables, (
+            f"Table Picture introuvable. Tables présentes : {tables}"
+        )
+        assert "tags" in tables or "tag" in tables, (
+            f"Table Tag introuvable. Tables présentes : {tables}"
         )
