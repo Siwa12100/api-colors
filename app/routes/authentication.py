@@ -11,7 +11,6 @@ from functools import wraps
 from app.extensions import db
 from app.models.user import User
 
-
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 
@@ -19,7 +18,7 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
 
-JWT_SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+JWT_SECRET_KEY = os.getenv("SECRET_KEY")
 
 JWT_EXPIRATION_HOURS = 24
 
@@ -208,16 +207,15 @@ def callback():
 
     token = generer_token_jwt(utilisateur)
 
-    return jsonify({
-        "message": "Login successful!",
-        "token": token,
-        "user": {
-            "id": utilisateur.id,
-            "email": utilisateur.email,
-            "full_name": utilisateur.full_name,
-            "role": utilisateur.role,
-        }
-    }), 200
+    # Rediriger vers le frontend Angular avec le JWT dans l'URL
+    # Angular va lire ce token et le stocker dans localStorage
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+    return redirect(
+        f"{frontend_url}/auth/callback?token={token}"
+        f"&email={utilisateur.email}"
+        f"&full_name={utilisateur.full_name}"
+        f"&role={utilisateur.role}"
+    )
 
 
 @auth_bp.route("/me", methods=["GET"])
