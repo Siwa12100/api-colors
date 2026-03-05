@@ -1,8 +1,9 @@
 import os
 from flask import Flask, jsonify
+from flask_cors import CORS
 from app.extensions import db, migrate
 from app.config import config_by_name
-from app.routes import pictures_bp, tags_bp
+from app.routes import pictures_bp, tags_bp, auth_bp
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -19,12 +20,16 @@ def create_app(config_name=None):
 
     app.config.from_object(config)
 
+    # Activer CORS pour que le frontend Angular puisse appeler l'API
+    CORS(app, origins=["http://localhost:4200"], supports_credentials=True)
+
     db.init_app(app)    
     migrate.init_app(app, db)
     
     # Register blueprints
     app.register_blueprint(pictures_bp)
     app.register_blueprint(tags_bp)
+    app.register_blueprint(auth_bp)
 
     @app.route("/")
     def index():
