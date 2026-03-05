@@ -254,6 +254,66 @@ def test_update_folder_name(client):
     assert resp.status_code == 200
     assert resp.get_json()["name"] == "Nouveau Nom"
 
+def test_update_folder_add_pictures(client):
+    user_id = create_user()
+    ws_id = create_workspace(user_id)
+    folder_id = create_folder(ws_id)
+    ds_id = create_datasource()
+    pic_id = create_picture(ds_id)
+
+    resp = client.put(f"/api/folders/{folder_id}", json={"pictures": [pic_id]})
+    assert resp.status_code == 200
+    assert pic_id in resp.get_json()["pictures"]
+
+def test_update_folder_replace_pictures(client):
+    user_id = create_user()
+    ws_id = create_workspace(user_id)
+    folder_id = create_folder(ws_id)
+    ds_id = create_datasource()
+    pic1_id = create_picture(ds_id, {"google_id": "id1"})
+    pic2_id = create_picture(ds_id, {"google_id": "id2"})
+
+    client.put(f"/api/folders/{folder_id}", json={"pictures": [pic1_id]})
+    resp = client.put(f"/api/folders/{folder_id}", json={"pictures": [pic2_id]})
+    assert resp.status_code == 200
+    pictures = resp.get_json()["pictures"]
+    assert pic1_id not in pictures
+    assert pic2_id in pictures
+
+def test_update_folder_clear_pictures(client):
+    user_id = create_user()
+    ws_id = create_workspace(user_id)
+    folder_id = create_folder(ws_id)
+    ds_id = create_datasource()
+    pic_id = create_picture(ds_id)
+
+    client.put(f"/api/folders/{folder_id}", json={"pictures": [pic_id]})
+    resp = client.put(f"/api/folders/{folder_id}", json={"pictures": []})
+    assert resp.status_code == 200
+    assert resp.get_json()["pictures"] == []
+
+def test_update_folder_invalid_picture_id(client):
+    user_id = create_user()
+    ws_id = create_workspace(user_id)
+    folder_id = create_folder(ws_id)
+
+    resp = client.put(f"/api/folders/{folder_id}", json={"pictures": [9999]})
+    assert resp.status_code == 200
+    assert resp.get_json()["pictures"] == []  # id inexistant ignoré
+
+def test_update_folder_name_and_pictures(client):
+    user_id = create_user()
+    ws_id = create_workspace(user_id)
+    folder_id = create_folder(ws_id)
+    ds_id = create_datasource()
+    pic_id = create_picture(ds_id)
+
+    resp = client.put(f"/api/folders/{folder_id}", json={"name": "Nouveau Nom", "pictures": [pic_id]})
+    assert resp.status_code == 200
+    data = resp.get_json()
+    assert data["name"] == "Nouveau Nom"
+    assert pic_id in data["pictures"]
+
 def test_update_folder_not_found(client):
     resp = client.put("/api/folders/9999", json={"name": "ghost"})
     assert resp.status_code == 404
@@ -283,7 +343,7 @@ def test_delete_folder_cascades_children(client):
     child_id = create_folder(ws_id, {"name": "Child", "parent_folder_id": parent_id})
     client.delete(f"/api/folders/{parent_id}")
     resp = client.get(f"/api/folders/{child_id}")
-    assert resp.status_code == 400
+    assert resp.status_code == 404
 
 def test_delete_folder_not_found(client):
     resp = client.delete("/api/folders/9999")

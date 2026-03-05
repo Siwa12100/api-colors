@@ -33,6 +33,11 @@ class FolderService:
     @staticmethod
     def update(folder, data):
         folder.name = data.get("name", folder.name)
+
+        picture_ids = data.get("pictures")
+        if picture_ids is not None:
+            folder.pictures = Picture.query.filter(Picture.id.in_(picture_ids)).all()
+
         db.session.commit()
         return folder
 

@@ -1,7 +1,6 @@
 from .admin import Admin
 from .datasource import DataSource
 from .folder import Folder
-from .imageLocation import ImageLocation
 from .picture import Picture
 from .pictureRatio import PictureRatio
 from .tag import Tag
@@ -13,7 +12,6 @@ __all__ = [
     "Admin",
     "DataSource",
     "Folder",
-    "ImageLocation",
     "Picture",
     "PictureRatio",
     "Tag",
