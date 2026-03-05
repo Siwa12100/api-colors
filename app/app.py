@@ -3,7 +3,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from app.extensions import db, migrate
 from app.config import config_by_name
-from app.routes import pictures_bp, tags_bp, auth_bp
+from app.routes import pictures_bp, tags_bp, workspaces_bp, folders_bp, auth_bp
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -29,6 +29,8 @@ def create_app(config_name=None):
     # Register blueprints
     app.register_blueprint(pictures_bp)
     app.register_blueprint(tags_bp)
+    app.register_blueprint(workspaces_bp)
+    app.register_blueprint(folders_bp)
     app.register_blueprint(auth_bp)
 
     @app.route("/")

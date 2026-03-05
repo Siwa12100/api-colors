@@ -1,37 +1,30 @@
 from flask import Blueprint, request, jsonify
 
-from app.extensions import db
 from app.models.tag import Tag
+from app.services.tag_service import TagService
+from app.utils.api_request import get_or_404, get_pagination_params, pagination_to_dict
+
 
 tags_bp = Blueprint("tags", __name__, url_prefix="/api/tags")
 
 # ---------- GET all ----------
 @tags_bp.route("", methods=["GET"])
 def get_tags():
-    page = request.args.get("page", 1, type=int)
-    per_page = request.args.get("per_page", 20, type=int)
+    page, per_page = get_pagination_params()
+    pagination = TagService.get_all(page, per_page)
 
-    pagination = Tag.query.order_by(Tag.id).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
+    return jsonify(pagination_to_dict(pagination)), 200
 
-    return jsonify({
-        "data": [tag.to_dict() for tag in pagination.items],
-        "total": pagination.total,
-        "page": pagination.page,
-        "pages": pagination.pages,
-    }), 200
 
 
 # ---------- GET one ----------
 @tags_bp.route("/<int:tag_id>", methods=["GET"])
 def get_tag(tag_id):
-    tag = db.session.get(Tag, tag_id)
-    if not tag:
-        return jsonify({"error": "Tag introuvable"}), 404
+    tag, err, code = get_or_404(Tag, tag_id, "Tag introuvable")
+    if err:
+        return err, code
 
     return jsonify(tag.to_dict()), 200
-
 
 # ---------- POST ----------
 @tags_bp.route("", methods=["POST"])
@@ -40,21 +33,16 @@ def create_tag():
     if not data:
         return jsonify({"error": "Invalid JSON body"}), 400
 
-    name = data.get("name")
+    name     = data.get("name")
     hex_code = data.get("hex_code")
 
     if not name or not hex_code:
         return jsonify({"error": "name and hex_code are required"}), 400
 
-    # Prevent duplicates
-    if Tag.query.filter_by(name=name).first():
+    if TagService.check_duplicate(name):
         return jsonify({"error": "This tag already exists"}), 409
 
-    tag = Tag()
-    tag.create(name=name, hex_code=hex_code)
-
-    db.session.add(tag)
-    db.session.commit()
+    tag = TagService.create(name, hex_code)
 
     return jsonify(tag.to_dict()), 201
 
@@ -62,19 +50,15 @@ def create_tag():
 # ---------- PUT ----------
 @tags_bp.route("/<int:tag_id>", methods=["PUT"])
 def update_tag(tag_id):
-    tag = db.session.get(Tag, tag_id)
-    if not tag:
-        return jsonify({"error": "Tag introuvable"}), 404
+    tag, err, code = get_or_404(Tag, tag_id, "Tag introuvable")
+    if err:
+        return err, code
 
     data = request.get_json()
     if not data:
         return jsonify({"error": "Invalid JSON body"}), 400
 
-
-    tag.name = data.get("name", tag.name)
-    tag.hex_code = data.get("hex_code", tag.hex_code)
-
-    db.session.commit()
+    tag = TagService.update(tag, data)
 
     return jsonify(tag.to_dict()), 200
 
@@ -82,11 +66,10 @@ def update_tag(tag_id):
 # ---------- DELETE ----------
 @tags_bp.route("/<int:tag_id>", methods=["DELETE"])
 def delete_tag(tag_id):
-    tag = db.session.get(Tag, tag_id)
-    if not tag:
-        return jsonify({"error": "Tag introuvable"}), 404
+    tag, err, code = get_or_404(Tag, tag_id, "Tag introuvable")
+    if err:
+        return err, code
 
-    db.session.delete(tag)
-    db.session.commit()
+    TagService.delete(tag)
 
     return jsonify({"message": f"Tag '{tag.name}' supprimée"}), 200

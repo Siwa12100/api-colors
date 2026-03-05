@@ -1,4 +1,5 @@
 from app.extensions import db
+
 class UserRights(db.Model):
     __tablename__ = "userRights"
 
