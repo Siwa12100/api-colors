@@ -76,12 +76,12 @@ steps:
         path: /coverage
 
     commands:
-      - echo "🔐 [INFO] Création du fichier credentials.json..."
-      - printf "%s" "$CREDENTIAL_JSON" > credentials.json
-      - test -f credentials.json || (echo "❌ [ERROR] credentials.json absent." && exit 1)
-      - test -s credentials.json || (echo "❌ [ERROR] credentials.json vide." && exit 1)
-      - echo "✅ [SUCCESS] credentials.json créé."
-      - ls -la credentials.json
+      - echo "🔐 [INFO] Création du fichier credential.json..."
+      - printf "%s" "$CREDENTIAL_JSON" > credential.json
+      - test -f credential.json || (echo "❌ [ERROR] credential.json absent." && exit 1)
+      - test -s credential.json || (echo "❌ [ERROR] credential.json vide." && exit 1)
+      - echo "✅ [SUCCESS] credential.json créé."
+      - ls -la credential.json
 
       - echo "🧪 [INFO] Installation des dépendances..."
       - pip install -r requirements.txt
