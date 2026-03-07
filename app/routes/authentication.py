@@ -240,3 +240,28 @@ def me(utilisateur_courant):
             else None
         ),
     }), 200
+
+def verifier_configuration_google():
+    """
+    Vérifie que la configuration OAuth Google est valide.
+    Teste si le endpoint token répond correctement.
+    """
+    if not GOOGLE_CLIENT_ID:
+        raise ValueError("GOOGLE_CLIENT_ID manquant")
+
+    if not GOOGLE_CLIENT_SECRET:
+        raise ValueError("GOOGLE_CLIENT_SECRET manquant")
+
+    if not GOOGLE_AUTH_URL:
+        raise ValueError("GOOGLE_AUTH_URL manquant")
+
+    if not GOOGLE_TOKEN_URL:
+        raise ValueError("GOOGLE_TOKEN_URL manquant")
+
+    # Test simple : requête GET sur l'endpoint auth
+    response = http_requests.get(GOOGLE_AUTH_URL)
+
+    if response.status_code != 200:
+        raise ConnectionError("Impossible de joindre GOOGLE_AUTH_URL")
+
+    return True

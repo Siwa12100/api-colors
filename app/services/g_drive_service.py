@@ -15,3 +15,14 @@ class GoogleDriveService:
         creds = ServiceAccountCredentials.from_json_keyfile_name(os.getenv("GOOGLE_APPLICATION_CREDENTIALS"), self._SCOPES)
         service = build('drive', 'v3', credentials=creds)
         return service
+    
+    def is_connected(self) -> bool:
+        """
+        Vérifie que la connexion à Google Drive fonctionne.
+        """
+        try:
+            service = self.build()
+            service.files().list(pageSize=1).execute()
+            return True
+        except Exception:
+            return False
