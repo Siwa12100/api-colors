@@ -186,20 +186,17 @@ def callback():
         return jsonify({"error": "Email not available in Google profile"}), 400
 
     utilisateur = User.query.filter_by(email=email_google).first()
-
+    
+    # The email is NOT in the whitelist -> access denied
+    # Because of google redirection we can't just send a 403
+    # So we need to call our front with an "error" attribute in order to handle the restriction
     if utilisateur is None:
-        # The email is NOT in the whitelist -> access denied
-        return jsonify({
-            "error": "Access denied",
-            "message": f"The email {email_google} is not authorized. "
-                       f"Contact an administrator to be added."
-        }), 403
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+        return redirect(f"{frontend_url}/auth/callback?error=unauthorized")
 
     if not utilisateur.is_active:
-        return jsonify({
-            "error": "Account disabled",
-            "message": "Your account has been disabled by an administrator."
-        }), 403
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+        return redirect(f"{frontend_url}/auth/callback?error=disabled")
 
     utilisateur.full_name = nom_complet_google
     utilisateur.last_login_at = datetime.datetime.now(datetime.timezone.utc)
