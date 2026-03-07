@@ -47,19 +47,37 @@ steps:
 
   - name: "🧪 tests-unitaires"
     image: python:3.13-alpine
+
     environment:
+      # --- Database ---
       TEST_DATABASE_URL:
         from_secret: TEST_DATABASE_URL
+
+      # --- Google Credentials file ---
       CREDENTIAL_JSON:
         from_secret: CREDENTIAL_JSON
 
+      # --- Google OAuth ---
+      GOOGLE_CLIENT_ID: 236646609324-kq3k78cf6j770g3iq5rto9s173pfnul1.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET:
+        from_secret: GOOGLE_CLIENT_SECRET
+      GOOGLE_REDIRECT_URI: http://localhost:5013/auth/callback
+
+      # --- Google URLs ---
+      GOOGLE_AUTH_URL: https://accounts.google.com/o/oauth2/v2/auth
+      GOOGLE_TOKEN_URL: https://oauth2.googleapis.com/token
+      GOOGLE_USERINFO_URL: https://www.googleapis.com/oauth2/v2/userinfo
+
+      # --- Frontend ---
+      FRONTEND_URL: http://localhost:4200
+
     volumes:
       - name: shared-volume
-        path: /coverage 
+        path: /coverage
 
     commands:
       - echo "🔐 [INFO] Création du fichier credentials.json..."
-      - echo "$CREDENTIAL_JSON" > credentials.json
+      - printf "%s" "$CREDENTIAL_JSON" > credentials.json
       - test -f credentials.json || (echo "❌ [ERROR] credentials.json absent." && exit 1)
       - test -s credentials.json || (echo "❌ [ERROR] credentials.json vide." && exit 1)
       - echo "✅ [SUCCESS] credentials.json créé."
@@ -77,6 +95,7 @@ steps:
       - ls -la /coverage/
 
       - echo "✅ [SUCCESS] Tests terminés avec couverture."
+
 
 
   - name: "📊 analyse-sonar"
