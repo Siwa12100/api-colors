@@ -55,7 +55,7 @@ steps:
 
     volumes:
       - name: shared-volume
-        path: /coverage
+        path: /coverage 
 
     commands:
       - echo "🔐 [INFO] Création du fichier credentials.json..."
