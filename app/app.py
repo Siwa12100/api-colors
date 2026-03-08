@@ -1,4 +1,5 @@
 import os
+from urllib import request
 from flask import Flask, jsonify
 from flask_cors import CORS
 from app.extensions import db, migrate
@@ -21,7 +22,23 @@ def create_app(config_name=None):
     app.config.from_object(config)
 
     # Activer CORS pour que le frontend Angular puisse appeler l'API
-    CORS(app, origins=["http://localhost:4200"], supports_credentials=True)
+    CORS(app, 
+     origins=["http://localhost:4200", "https://colors.valorium-mc.fr"], 
+     supports_credentials=True,
+     allow_headers=["Authorization", "Content-Type"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
+    @app.after_request
+    def after_request(response):
+        origin = request.headers.get('Origin')
+        allowed = ["http://localhost:4200", "https://colors.valorium-mc.fr"]
+        if origin in allowed:
+            response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+        response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response
 
     db.init_app(app)    
     migrate.init_app(app, db)
