@@ -25,7 +25,8 @@ def create_app(config_name=None):
      origins=["http://localhost:4200", "https://colors.valorium-mc.fr"], 
      supports_credentials=True,
      allow_headers=["Authorization", "Content-Type"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     always_send=True
 )
 
     @app.after_request
@@ -63,5 +64,15 @@ def create_app(config_name=None):
     @app.errorhandler(500)
     def internal_error(error):
         return jsonify({"error": "Erreur interne du serveur"}), 500
+    
+    @app.errorhandler(500)
+    def internal_error(error):
+        response = jsonify({"error": "Erreur interne du serveur"})
+        origin = request.headers.get('Origin')
+        allowed = ["http://localhost:4200", "https://colors.valorium-mc.fr"]
+        if origin in allowed:
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+        return response, 500
 
     return app
