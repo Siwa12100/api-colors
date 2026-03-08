@@ -7,15 +7,15 @@ from app.utils.api_request import get_or_404, get_pagination_params, pagination_
 
 tags_bp = Blueprint("tags", __name__, url_prefix="/api/tags")
 
-# ---------- GET all ----------
+# ---------- GET all with filters ----------
 @tags_bp.route("", methods=["GET"])
 def get_tags():
     page, per_page = get_pagination_params()
-    pagination = TagService.get_all(page, per_page)
+
+    query = TagService.build_tag_filter_query(request.args.get("name"))
+    pagination = query.order_by(Tag.id).paginate(page=page, per_page=per_page, error_out=False)
 
     return jsonify(pagination_to_dict(pagination)), 200
-
-
 
 # ---------- GET one ----------
 @tags_bp.route("/<int:tag_id>", methods=["GET"])
