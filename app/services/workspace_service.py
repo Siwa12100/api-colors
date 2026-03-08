@@ -29,6 +29,13 @@ class WorkspaceService:
         db.session.add(ws)
         db.session.commit()
         return ws
+    
+    @staticmethod
+    def get_or_create_default(user_id):
+        ws = WorkSpace.query.filter_by(user_id=user_id).first()
+        if not ws:
+            ws = WorkspaceService.create_default(user_id)
+        return ws
 
     @staticmethod
     def get_pictures(ws, page, per_page):

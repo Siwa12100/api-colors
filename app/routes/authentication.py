@@ -5,6 +5,7 @@ Authentication routes for the Colors API.
 import os
 import datetime
 import requests as http_requests
+from app.services.workspace_service import WorkspaceService
 import jwt
 from flask import Blueprint, request, jsonify, redirect
 from functools import wraps
@@ -207,14 +208,17 @@ def callback():
     # Rediriger vers le frontend Angular avec le JWT dans l'URL
     # Angular va lire ce token et le stocker dans localStorage
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
+    
+    workspace = WorkspaceService.get_or_create_default(utilisateur.id)
     return redirect(
-        f"{frontend_url}/auth/callback?token={token}"
-        f"&user_id={utilisateur.id}"
+        f"{frontend_url}/auth/callback"
+        f"?token={token}"
         f"&email={utilisateur.email}"
         f"&full_name={utilisateur.full_name}"
         f"&role={utilisateur.role}"
+        f"&user_id={utilisateur.id}"
+        f"&workspace_id={workspace.id}"
     )
-
 
 @auth_bp.route("/me", methods=["GET"])
 @jwt_requis
