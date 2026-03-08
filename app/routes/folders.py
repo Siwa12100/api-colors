@@ -47,39 +47,36 @@ def get_children_folders(folder_id):
 # ---------- POST ----------
 @folders_bp.route("", methods=["POST"])
 def create_folder():
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({"error": "Invalid JSON body"}), 400
+    
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid JSON body"}), 400
 
-        name             = data.get("name")
-        workspace_id     = data.get("workspace_id")
-        parent_folder_id = data.get("parent_folder_id")
+    name             = data.get("name")
+    workspace_id     = data.get("workspace_id")
+    parent_folder_id = data.get("parent_folder_id")
 
-        if not name or not workspace_id:
-            return jsonify({"error": "name and workspace_id are required"}), 400
+    if not name or not workspace_id:
+        return jsonify({"error": "name and workspace_id are required"}), 400
 
-        ws, err, code = get_or_404(WorkSpace, workspace_id, "Workspace introuvable")
+    ws, err, code = get_or_404(WorkSpace, workspace_id, "Workspace introuvable")
+    if err:
+        return err, code
+
+    if parent_folder_id:
+        parent, err, code = get_or_404(Folder, parent_folder_id, "Folder parent introuvable")
         if err:
             return err, code
+        if not FolderService.validate_parent(parent, workspace_id):
+            return jsonify({"error": "Le folder parent n'appartient pas à ce workspace"}), 400
 
-        if parent_folder_id:
-            parent, err, code = get_or_404(Folder, parent_folder_id, "Folder parent introuvable")
-            if err:
-                return err, code
-            if not FolderService.validate_parent(parent, workspace_id):
-                return jsonify({"error": "Le folder parent n'appartient pas à ce workspace"}), 400
+    if FolderService.check_duplicate(name, workspace_id, parent_folder_id):
+        return jsonify({"error": "Ce folder existe déjà dans ce workspace"}), 409
 
-        if FolderService.check_duplicate(name, workspace_id, parent_folder_id):
-            return jsonify({"error": "Ce folder existe déjà dans ce workspace"}), 409
+    folder = FolderService.create(name, workspace_id, parent_folder_id)
 
-        folder = FolderService.create(name, workspace_id, parent_folder_id)
+    return jsonify(folder.to_dict()), 201
 
-        return jsonify(folder.to_dict()), 201
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
 
 # ---------- PUT ----------
 @folders_bp.route("/<int:folder_id>", methods=["PUT"])
