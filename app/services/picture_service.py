@@ -64,7 +64,7 @@ class PictureService:
                 resolutionX=width,
                 contrast=0, # TODO
                 luminosity=0, # TODO
-                thumbnailLink=file.get("thumbnailLink"),
+                thumbnailLink=f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800',
                 downloadLink=file.get("webContentLink"),
                 lastUpdated=file.get("modifiedTime"),
                 datasource_id=datasource.id,
