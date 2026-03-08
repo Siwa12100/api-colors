@@ -209,6 +209,7 @@ def callback():
     frontend_url = os.getenv("FRONTEND_URL", "http://localhost:4200")
     return redirect(
         f"{frontend_url}/auth/callback?token={token}"
+        f"&user_id={utilisateur.id}"
         f"&email={utilisateur.email}"
         f"&full_name={utilisateur.full_name}"
         f"&role={utilisateur.role}"
