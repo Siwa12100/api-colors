@@ -21,7 +21,24 @@ def create_app(config_name=None):
     app.config.from_object(config)
 
     # Activer CORS pour que le frontend Angular puisse appeler l'API
-    CORS(app, origins=["http://localhost:4200"], supports_credentials=True)
+    CORS(app, 
+     origins=["http://localhost:4200"], 
+     supports_credentials=True,
+     # pour désactiver le preflight qui bloque qu'on a le front en localhost et
+     # l'api en prod # TODO : on peut le suppr quand le dev sera finis
+     allow_headers=["Authorization", "Content-Type"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    )
+
+    # pour désactiver le preflight qui bloque qu'on a le front en localhost et
+    # l'api en prod # TODO : on peut le suppr quand le dev sera finis
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:4200')
+        response.headers.add('Access-Control-Allow-Headers', 'Authorization, Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
 
     db.init_app(app)    
     migrate.init_app(app, db)
