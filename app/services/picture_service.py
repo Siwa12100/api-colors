@@ -29,11 +29,21 @@ class PictureService:
         return OrientationEnum.PORTRAIT
 
     @staticmethod
-    def upload_from_drive():
+    def upload_from_drive(folder_url: str = None):
         selected_fields = "files(id, name, hasThumbnail, thumbnailLink, size, imageMediaMetadata, webContentLink, webViewLink, modifiedTime)"
         g_drive_service = GoogleDriveService().build()
-        list_file = g_drive_service.files().list(fields=selected_fields).execute()
         cmp_pictures_added = 0
+
+        # Extraire le folder_id depuis l'URL
+        query = "mimeType contains 'image/'"
+        if folder_url:
+            folder_id = folder_url.rstrip('/').split('/')[-1]
+            query += f" and '{folder_id}' in parents"
+
+        list_file = g_drive_service.files().list(
+            fields=selected_fields,
+            q=query
+        ).execute()
 
         datasource = PictureService.get_or_create_datasource()
 
