@@ -80,6 +80,9 @@ class Picture(db.Model):
             "downloadLink": self.downloadLink,
             "lastUpdated": self.lastUpdated,
             "datasource_id": self.datasource_id,
+            "resolutionX": self.resolutionX,
+            "resolutionY": self.resolutionY,
+            "lastUpdated": self.lastUpdated
         }
     
     def __repr__(self):
