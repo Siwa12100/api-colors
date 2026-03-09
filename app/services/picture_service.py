@@ -3,6 +3,7 @@ from app.models.picture import Picture, OrientationEnum
 from app.models.datasource import DataSource
 from app.models.tag import Tag
 from app.services.g_drive_service import GoogleDriveService
+from app.utils.image_analysis import analyse_image
 
 
 class PictureService:
@@ -40,16 +41,18 @@ class PictureService:
         for file in list_file["files"]:
             if Picture.query.filter_by(google_id=file.get("id")).first():
                 continue
-
+            
             if not file.get("hasThumbnail", False):
                 continue
-
+            
             metadata = file.get("imageMediaMetadata", {})
             width  = metadata.get("width")
             height = metadata.get("height")
 
             if not width or not height:
                 continue
+            
+            result = analyse_image(f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800')
 
             image = Picture()
             image.create(
@@ -57,13 +60,13 @@ class PictureService:
                 comment=None,
                 google_id=file.get("id"),
                 tags=[],
-                mainColors=[], # TODO
+                mainColors= result["dom_colors"],
                 ratio=0, # TODO
                 orientation=PictureService.compute_orientation(width, height),
                 resolutionY=height,
                 resolutionX=width,
                 contrast=0, # TODO
-                luminosity=0, # TODO
+                luminosity= result["avg_luminosity"] ,
                 thumbnailLink=f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800',
                 downloadLink=file.get("webContentLink"),
                 lastUpdated=file.get("modifiedTime"),
