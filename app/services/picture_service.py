@@ -3,7 +3,7 @@ from app.models.picture import Picture, OrientationEnum
 from app.models.datasource import DataSource
 from app.models.tag import Tag
 from app.services.g_drive_service import GoogleDriveService
-from app.utils.image_analysis import determine_dominant
+from app.utils.image_analysis import analyse_image
 
 
 class PictureService:
@@ -51,8 +51,8 @@ class PictureService:
 
             if not width or not height:
                 continue
-
-            colors = determine_dominant(f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800')
+            
+            result = analyse_image(f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800')
 
             image = Picture()
             image.create(
@@ -60,13 +60,13 @@ class PictureService:
                 comment=None,
                 google_id=file.get("id"),
                 tags=[],
-                mainColors= colors,
+                mainColors= result["dom_colors"],
                 ratio=0, # TODO
                 orientation=PictureService.compute_orientation(width, height),
                 resolutionY=height,
                 resolutionX=width,
                 contrast=0, # TODO
-                luminosity=0, # TODO
+                luminosity= result["avg_luminosity"] ,
                 thumbnailLink=f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800',
                 downloadLink=file.get("webContentLink"),
                 lastUpdated=file.get("modifiedTime"),

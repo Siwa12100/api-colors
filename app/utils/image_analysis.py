@@ -18,13 +18,13 @@ COLORS = {
     "pink": range(280, 340)
 }
 
-def getImage(url: str):
+def get_image(url: str):
     """
     Gets the thumbnail from the url passed as a param.
-    Returns: handle to file, handle to its directory
+    Returns: file-like object
 
-    Contract: calling function has to CLOSE both of the
-    returned objects when done with them.
+    Contract: calling function has to CLOSE the returned 
+    file object when done with it.
     """
     data = requests.get(url).content
 
@@ -37,15 +37,13 @@ def getImage(url: str):
 
 ## --------------- COLORS
 
-def dominant_colors(path: str) -> tuple:
+def dominant_colors(img: Image) -> tuple:
     """
     Calculates the dominant colors of an image
-    at `path` and returns it as an rgb tuple.
+    and returns them as a list of tuples ((rgb), occurencies).
     from https://towardsdatascience.com/image-color-extraction-with-python-in-4-steps-8d9370d9216e/
     """
-    image = Image.open(path.name)
-    image = image.resize((150, 150))      # optional, to reduce time
-    colors = extcolors.extract_from_image(image, tolerance=20, limit=5)
+    colors = extcolors.extract_from_image(img, tolerance=20, limit=5)
     
     return colors[0]
 
@@ -78,14 +76,13 @@ def classisfy_color(color: tuple):
 
     return color_class
 
-def determine_dominant(url: str):
+def determine_dominant(image: Image):
     """
     Determines the 3 most dominant colors (could be less), 
     taking into account at most the 5 most present colors.
     Returns: list of max 3 strings
     """
-    file_path = getImage(url)
-    colors = dominant_colors(file_path)
+    colors = dominant_colors(image)
     present = {}
 
     for color, count in colors:
@@ -99,15 +96,23 @@ def determine_dominant(url: str):
     most_colors.sort(key = lambda a: a[1], reverse=True) # sort by occurances
     most_colors = [color for color, count in most_colors]
     # print("occurancies, classified and sorted: ", most_colors)
-    file_path.close()
     return most_colors[:3] if len(most_colors) >= 3 else most_colors
 
 ## ----------- OTHER
 
-def avg_luminosity(image: Image):
+def avg_luminosity(img):
     ## look at every pixel, sum luminsoity (HSV brightness)
     ## and divide by nb pixels
-    pass
+    image = img.convert("HSV")
+    brightness_sum = 0
+    nb_pixels = image.width * image.height
+    for x in range(image.width):
+        for y in range(image.height):
+            hue, sat, bright = image.getpixel((x,y))
+            brightness_sum += bright
+    
+    return math.floor(brightness_sum / nb_pixels)
+
 
 def general_contrast():
     ## what does this mean ????
@@ -118,5 +123,19 @@ def ratio(width: int, height: int):
     ## (tolerqnce of 5px diff) otherwise just return
     ## width x height
     return (width, height) 
+
+## ----------- OVERALL
+def analyse_image(url: str):
+    img_file = get_image(url)
+    image = Image.open(img_file.name)
+    image = image.resize((150, 150))      # optional, to reduce time
+    dom_colors = determine_dominant(image)
+    avg_lum = avg_luminosity(image)
+    img_file.close()
+
+    return {
+        "dom_colors": dom_colors,
+        "avg_luminosity": avg_lum
+    }
 
 # print("dom colors:", determine_dominant('../../../../../../mnt/c/Users/emafi/OneDrive/Počítač/fotky/lyon_ela/IMG_0772.JPG'))
