@@ -15,8 +15,6 @@ def get_tags():
 
     return jsonify(pagination_to_dict(pagination)), 200
 
-
-
 # ---------- GET one ----------
 @tags_bp.route("/<int:tag_id>", methods=["GET"])
 def get_tag(tag_id):

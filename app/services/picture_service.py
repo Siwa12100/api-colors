@@ -113,8 +113,8 @@ class PictureService:
 
         tags = args.get("tags")
         if tags:
-            for tag_id in tags:
-                query = query.join(Picture.tags).filter(Tag.id == tag_id)
+           tag_ids = [int(t) for t in tags.split(",")] 
+           query = query.join(Picture.tags).filter(Tag.id.in_(tag_ids))
 
         main_colors = args.get("mainColors")
         if main_colors:
