@@ -3,6 +3,7 @@ from app.models.picture import Picture, OrientationEnum
 from app.models.datasource import DataSource
 from app.models.tag import Tag
 from app.services.g_drive_service import GoogleDriveService
+from app.utils.image_analysis import determine_dominant
 
 
 class PictureService:
@@ -40,10 +41,10 @@ class PictureService:
         for file in list_file["files"]:
             if Picture.query.filter_by(google_id=file.get("id")).first():
                 continue
-
+            
             if not file.get("hasThumbnail", False):
                 continue
-
+            
             metadata = file.get("imageMediaMetadata", {})
             width  = metadata.get("width")
             height = metadata.get("height")
@@ -51,13 +52,15 @@ class PictureService:
             if not width or not height:
                 continue
 
+            colors = determine_dominant(f'https://drive.google.com/thumbnail?id={file.get("id")}&sz=s800')
+
             image = Picture()
             image.create(
                 name=file.get("name"),
                 comment=None,
                 google_id=file.get("id"),
                 tags=[],
-                mainColors=[], # TODO
+                mainColors= colors,
                 ratio=0, # TODO
                 orientation=PictureService.compute_orientation(width, height),
                 resolutionY=height,
