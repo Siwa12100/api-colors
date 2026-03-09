@@ -5,6 +5,7 @@ from app.models.tag import Tag
 from app.services.g_drive_service import GoogleDriveService
 from app.utils.image_analysis import analyse_image
 
+import math
 
 class PictureService:
 
@@ -121,7 +122,16 @@ class PictureService:
 
         main_colors = args.get("mainColors")
         if main_colors:
-            query = query.filter(Picture.mainColors.overlap(main_colors.split(",")))
+            print(main_colors.split(","))
+            query = query.filter(Picture.mainColors.op('&&')(main_colors.split(",")))
+        
+        luminosity = args.get("luminosity")
+        if luminosity:
+                ## input is between 0-100
+                luminosity = (math.floor(float(luminosity))/100) * 255
+                ## permissive filter
+                print("upper:", luminosity*1.1, ", lower:", luminosity*0.9)
+                query = query.filter(Picture.luminosity <= 1.1*luminosity, Picture.luminosity >= 0.9*luminosity)
 
         updated_after = args.get("updated_after")
         if updated_after:
