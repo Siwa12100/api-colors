@@ -19,10 +19,17 @@ def create_app(config_name=None):
     config.validate()
     app.config.from_object(config)
 
+<<<<<<< Updated upstream
     # ✅ CORS totalement ouvert
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     db.init_app(app)
+=======
+    # Activer CORS pour que le frontend Angular puisse appeler l'API
+    CORS(app, origins=["http://localhost:4200"], supports_credentials=True)
+
+    db.init_app(app)    
+>>>>>>> Stashed changes
     migrate.init_app(app, db)
 
     # Register blueprints
