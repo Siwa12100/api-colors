@@ -12,7 +12,8 @@ pictures_bp = Blueprint("pictures", __name__, url_prefix="/api/pictures")
 # ---------- UPLOAD from Google Drive ----------
 @pictures_bp.route("/upload", methods=["GET"])
 def upload_pictures():
-    cmp_pictures_added = PictureService.upload_from_drive()
+    folder_url = request.args.get("folder_url")
+    cmp_pictures_added = PictureService.upload_from_drive(folder_url)
     return jsonify({"pictures_added_count": cmp_pictures_added}), 200
 
 # ---------- GET all with filters ----------
