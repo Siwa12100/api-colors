@@ -31,3 +31,11 @@ class TagService:
     def delete(tag):
         db.session.delete(tag)
         db.session.commit()
+    
+    @staticmethod
+    def build_tag_filter_query(name):
+        query = Tag.query
+        
+        if name:
+            query = query.filter(Tag.name.ilike(f"{name}%"))
+        return query
